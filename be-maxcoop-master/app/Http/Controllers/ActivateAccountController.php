@@ -1,0 +1,128 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Events\AccountActivateEvent;
+use App\Events\AccountRejectEvent;
+use App\Models\Account;
+use App\Models\ActivateAccount;
+use App\Services\UserService;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Validator;
+
+class ActivateAccountController extends Controller
+{
+    public function create(Request $request)
+    {
+        try {
+            $validate = Validator::make($request->all(), [
+                'imageUrl' => ['required', 'url'],
+                'paymentDate' => ['required'],
+            ]);
+
+            if ($validate->fails()) {
+                return $this->json_failed('Validation failed', $validate->errors(), 422);
+            }
+
+            auth()->user()->account()->create([
+                'imageUrl' => $request->imageUrl,
+                'paymentDate' => $request->paymentDate
+            ]);
+
+            return $this->json_success('Account activation request sent successfully');
+        } catch (\Exception $e) {
+            return $this->json_failed($e->getMessage());
+        }
+    }
+
+    public function read()
+    {
+        try {
+            $requests = Account::with(['user' => function ($query) {
+                $query->select(['id', 'firstName', 'lastName', 'email']);
+            }])->get();
+            return $this->json_success('Account Activation Requests Fetched', $requests);
+        } catch (\Exception $e) {
+            return $this->json_failed($e->getMessage());
+        }
+    }
+
+    public function memberRequests()
+    {
+        try {
+            $requests = auth()->user()->account()->get();
+            return $this->json_success('Account Activation Requests Fetched', $requests);
+        } catch (\Exception $e) {
+            return $this->json_failed($e->getMessage());
+        }
+    }
+
+    public function activate(Request $request)
+    {
+        try {
+
+            $validate = Validator::make($request->all(), [
+                'accountId' => ['required'],
+                'plan' => ['required'],
+            ]);
+
+            if ($validate->fails()) {
+                return $this->json_failed('Validation failed', $validate->errors(), 422);
+            }
+
+            $account = Account::find($request->accountId);
+
+            // @todo: kindly revisit
+            // if (\Helpers::findPlan($request->plan)) {
+            //     return $this->json_failed('Plan not found, please try again');
+            // }
+
+            if (!$account) {
+                return $this->json_failed('Account not found');
+            }
+
+            // if account status is not INACTIVE
+            if ($account->status != config('constants.accountStatus.0')) {
+                return $this->json_failed('Account status already updated');
+            }
+
+            if ($request->plan == config('constants.plans.0.id')) {
+                return $this->json_failed('Invalid plan selected, please try again');
+            }
+
+            $user = $account->user;
+
+            // if user is not inactive, user is already activate hence, reject request
+            if ($user->plan != config('constants.plans.0.id')) {
+                return $this->json_failed('User already activated, kindly refund user and reject request');
+            }
+
+            // log user out
+            UserService::logUserOut($user);
+
+            $account->status = config('constants.accountStatus.1');
+            $account->save();
+            event(new AccountActivateEvent($user, $request->plan));
+
+            return $this->json_success('Account Activation Success', $account);
+        } catch (\Exception $e) {
+            return $this->json_failed($e->getMessage());
+        }
+    }
+
+    public function reject(Account $account)
+    {
+        try {
+            // if account status is not INACTIVE
+            if ($account->status != config('constants.accountStatus.0')) {
+                return $this->json_failed('Account status already updated');
+            }
+            $account->status =  config('constants.accountStatus.2');
+            $account->save();
+            event(new AccountRejectEvent());
+            return $this->json_success('Account Rejection Success', $account);
+        } catch (\Exception $e) {
+            return $this->json_failed($e->getMessage());
+        }
+    }
+}
