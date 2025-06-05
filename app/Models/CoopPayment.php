@@ -5,10 +5,9 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class Withdrawal extends Model
+class CoopPayment extends Model
 {
     use HasFactory;
-
     protected $guarded = [];
 
     public function user()
@@ -16,15 +15,7 @@ class Withdrawal extends Model
         return $this->belongsTo('App\Models\User');
     }
 
-    /**
-     * SCOPES
-     */
-    public function scopeSuccessful($query)
-    {
-        return $query->where('status', 'SUCCESS');
-    }
-
-    public function scopePending($query)
+    public function scopeIsPending($query)
     {
         return $query->where('status', 'PENDING');
     }
