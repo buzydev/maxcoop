@@ -125,4 +125,42 @@ class ActivateAccountController extends Controller
             return $this->json_failed($e->getMessage());
         }
     }
+
+
+    //Cooperative Payments
+
+    public function createCoopPayment(Request $request)
+    {
+        try {
+            $validate = Validator::make($request->all(), [
+                'imageUrl' => ['required', 'url'],
+                'paymentType' => ['required'],
+                'paymentDate' => ['required'],
+            ]);
+
+            if ($validate->fails()) {
+                return $this->json_failed('Validation failed', $validate->errors(), 422);
+            }
+
+            auth()->user()->coopPayments()->create([
+                'imageUrl' => $request->imageUrl,
+                'paymentType' => $request->paymentType,
+                'paymentDate' => $request->paymentDate
+            ]);
+
+            return $this->json_success('Account activation request sent successfully');
+        } catch (\Exception $e) {
+            return $this->json_failed($e->getMessage());
+        }
+    }
+
+    public function CoopPaymentRequests()
+    {
+        try {
+            $requests = auth()->user()->coopPayments()->get();
+            return $this->json_success('Cooperative Payment Requests Fetched', $requests);
+        } catch (\Exception $e) {
+            return $this->json_failed($e->getMessage());
+        }
+    }
 }

@@ -71,6 +71,11 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('account/request-activate', [ActivateAccountController::class, 'create'])->name('post.account.activate-request');
     Route::get('member/activate/requests', [ActivateAccountController::class, 'memberRequests'])->name('get.member.account.requests');
 
+
+
+    // ACTIVATE ACCOUNT
+    Route::post('account/request-payment', [ActivateAccountController::class, 'createCoopPayment'])->name('post.account.payment-request');
+    Route::get('account/request-payments', [ActivateAccountController::class, 'CoopPaymentRequests'])->name('get.coop.account.requests');
     // CONTRIBUTIONS
     Route::get('member/contributions', [ContributionController::class, 'getContributions'])->name('getContributions');
 

@@ -46,6 +46,18 @@ class User extends Authenticatable
     {
         return $this->hasMany('App\Models\Account');
     }
+    /*************  ✨ Windsurf Command ⭐  *************/
+    /**
+     * Returns a collection of CoopPayment instances associated with the user.
+     * This is a hasMany relationship.
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     */
+    /*******  f7ebdfb2-0596-44ab-aa67-77249f832740  *******/
+    public function coopPayments()
+    {
+        return $this->hasMany('App\Models\CoopPayment');
+    }
 
     public function transactions()
     {
