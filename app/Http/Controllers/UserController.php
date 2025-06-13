@@ -24,7 +24,8 @@ class UserController extends Controller
     {
         try {
             $response = [
-                'user' => $user, 'Yes',
+                'user' => $user,
+                'Yes',
                 'profileData' => AccountDetail::where('user_id', $user->id)->first(),
                 'referral' => User::sponsor($user)->first()
             ];

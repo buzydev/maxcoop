@@ -73,9 +73,10 @@ Route::middleware('auth:sanctum')->group(function () {
 
 
 
-    // ACTIVATE ACCOUNT
+    // Cooperative Payment
     Route::post('account/request-payment', [ActivateAccountController::class, 'createCoopPayment'])->name('post.account.payment-request');
     Route::get('account/request-payments', [ActivateAccountController::class, 'CoopPaymentRequests'])->name('get.coop.account.requests');
+
     // CONTRIBUTIONS
     Route::get('member/contributions', [ContributionController::class, 'getContributions'])->name('getContributions');
 
@@ -112,6 +113,15 @@ Route::middleware(['auth:sanctum', 'isAdmin'])->group(function () {
     Route::get('account/requests', [ActivateAccountController::class, 'read'])->name('get.account.requests');
     Route::post('account/activate', [ActivateAccountController::class, 'activate'])->name('patch.account.activate');
     Route::patch('account/reject/{account}', [ActivateAccountController::class, 'reject'])->name('patch.account.reject');
+
+
+    //Withdraw action
+    Route::get('withdraw/requests', [WithdrawalController::class, 'GetAllWithdraws'])->name('get.withdraw.requests');
+    Route::patch('withdraw/{id}', [WithdrawalController::class, 'UpdateWithdraw'])->name('patch.withdraw.update');
+
+    // Payments
+    Route::get('payment/requests', [WithdrawalController::class, 'GetAllCoopPayments'])->name('get.payment.requests');
+    Route::patch('payment/{id}', [WithdrawalController::class, 'UpdateCoopPayment'])->name('patch.payment.update');
 });
 
 

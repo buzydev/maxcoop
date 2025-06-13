@@ -11,5 +11,6 @@ return [
     ],
     'accountStatus' => [0 => 'PENDING', 1 => 'SUCCESS', 2 => 'REJECTED'],
     'roles' => [0 => 'SUPER_ADMIN', 1 => 'ADMIN', 2 => 'MEMBER'],
-    'earningType' => [['id' => 0, 'name' => 'ACCOUNT_ACTIVATION'],  ['id' => 1, 'name' => 'PROPERTY_SALE']]
+    'earningType' => [['id' => 0, 'name' => 'ACCOUNT_ACTIVATION'],  ['id' => 1, 'name' => 'PROPERTY_SALE']],
+    'admin_email' => env('ADMIN_EMAIL', null)
 ];
