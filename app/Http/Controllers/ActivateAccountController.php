@@ -148,7 +148,7 @@ class ActivateAccountController extends Controller
                 'paymentDate' => $request->paymentDate
             ]);
 
-            return $this->json_success('Account activation request sent successfully');
+            return $this->json_success('Payment request sent successfully');
         } catch (\Exception $e) {
             return $this->json_failed($e->getMessage());
         }
