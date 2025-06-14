@@ -87,7 +87,7 @@ class WithdrawalController extends Controller
     public function UpdateWithdraw(Request $request, $withdraw_id)
     {
         $validate = Validator::make($request->all(), [
-            'status' => ['required', 'in:pending,success,rejected'],
+            'status' => ['required', 'in:PENDING,SUCCESS,REJECTED'],
         ]);
 
         if ($validate->fails()) {
@@ -139,7 +139,7 @@ class WithdrawalController extends Controller
     public function UpdateCoopPayment(Request $request, $payment_id)
     {
         $validate = Validator::make($request->all(), [
-            'status' => ['required', 'in:pending,success,rejected'],
+            'status' => ['required', 'in:PENDING,SUCCESS,REJECTED'],
         ]);
 
         if ($validate->fails()) {
