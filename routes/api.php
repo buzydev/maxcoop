@@ -30,9 +30,11 @@ use Illuminate\Support\Facades\Mail;
 Route::middleware(['guest'])->group(function () {
     Route::post('auth/login', [AuthController::class, 'login'])->name('login');
     Route::post('auth/register', [AuthController::class, 'register'])->name('register');
-    Route::post('auth/initiate-password-reset', [AuthController::class, 'initiate_password_reset'])->name('initiate_password_reset');
     Route::post('auth/initiate-verify-email', [AuthController::class, 'initiate_verify_email'])->name('initiate_verify_email');
     Route::post('auth/verify-email', [AuthController::class, 'verify_email'])->name('verify_email');
+    Route::post('auth/initiate-password-reset', [AuthController::class, 'initiate_password_reset'])->name('initiate_password_reset');
+    Route::post('auth/verify-reset-password-email', [AuthController::class, 'verify_password_reset_email'])->name('reset-verify_email');
+    Route::post('auth/change-password', [AuthController::class, 'change_password'])->name('change_password');
 });
 
 Route::get('test/email', function () {
@@ -113,6 +115,8 @@ Route::middleware(['auth:sanctum', 'isAdmin'])->group(function () {
     Route::get('account/requests', [ActivateAccountController::class, 'read'])->name('get.account.requests');
     Route::post('account/activate', [ActivateAccountController::class, 'activate'])->name('patch.account.activate');
     Route::patch('account/reject/{account}', [ActivateAccountController::class, 'reject'])->name('patch.account.reject');
+    Route::delete('account/delete/{account}', [ActivateAccountController::class, 'DeleteAccount'])->name('account.delete');
+
 
 
     //Withdraw action
