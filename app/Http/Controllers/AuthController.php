@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
+use App\Notifications\PasswordResetNotification;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth;
@@ -157,6 +158,123 @@ class AuthController extends Controller
         return response()->json(['message' => 'Email verified successfully']);
     }
 
+
+
+    /*************  ✨ Windsurf Command ⭐  *************/
+    /**
+     * Initiates the password reset process for a user by sending a verification code to their email.
+     *
+     * Validates the request for the presence of an email. Searches for the user with the provided
+     * email or username. If the user is found, generates a 6-digit verification code, stores it
+     * in the cache for 15 minutes, and sends it to the user's email via a notification.
+     * Returns a success message if the process is initiated successfully, otherwise returns
+     * an error message if the user is not found.
+     *
+     * @param \Illuminate\Http\Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+
+    /*******  22514395-37a5-4529-86d6-91853bbf4439  *******/
+    public function initiate_password_reset(Request $request)
+    {
+        $request->validate([
+            'email' => 'required',
+        ]);
+
+        $user = User::where(function ($query) use ($request) {
+            $query->where('email', $request->email)
+                ->orWhere('username', $request->email);
+        })->first();
+
+        if (!$user) {
+            return response()->json(['message' => 'User not found'], 400);
+        }
+
+        $code = str_pad(random_int(0, 999999), 6, '0', STR_PAD_LEFT);
+
+        // Store the code in cache for 15 minutes
+        Cache::put('verification_code_' . $user->id, $code, now()->addMinutes(15));
+
+        // Send email
+        $user->notify(new PasswordResetNotification($code));
+
+
+        return response()->json(['message' => 'Verification code sent successfully']);
+    }
+
+    /*************  ✨ Windsurf Command ⭐  *************/
+    /**
+     * Verify password reset email.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\Http\Response
+     */
+    /*******  7be10837-98e8-4ce0-85a1-fc5944359748  *******/
+    public function verify_password_reset_email(Request $request)
+    {
+        $request->validate([
+            'email' => 'required',
+            'code' => 'required|string|size:6',
+        ]);
+
+        $user = User::where(function ($query) use ($request) {
+            $query->where('email', $request->email)
+                ->orWhere('username', $request->email);
+        })->first();
+
+        if (!$user) {
+            return response()->json(['message' => 'User not found'], 400);
+        }
+
+        $cachedCode = Cache::get('verification_code_' . $user->id);
+
+        if (!$cachedCode || $cachedCode !== $request->code) {
+            return response()->json(['message' => 'Invalid or expired verification code'], 400);
+        }
+
+        $user->email_verified_at = now();
+        $user->save();
+
+        Cache::forget('verification_code_' . $user->id);
+
+        return response()->json(['message' => 'Code verified successfully']);
+    }
+
+    /*************  ✨ Windsurf Command ⭐  *************/
+    /**
+     * Change the password for the authenticated user.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\Http\Response
+     */
+    /*******  b4412213-8d89-4429-b94e-16fe4defff98  *******/
+    public function change_password(Request $request)
+    {
+        $request->validate([
+            'email' => 'required',
+            'code' => 'required|string|size:6',
+            'password' => 'required|string|min:6',
+        ]);
+
+        $user = User::where(function ($query) use ($request) {
+            $query->where('email', $request->email)
+                ->orWhere('username', $request->email);
+        })->first();
+
+        if (!$user) {
+            return response()->json(['message' => 'User not found'], 400);
+        }
+
+        $cachedCode = Cache::get('verification_code_' . $user->id);
+
+        if (!$cachedCode || $cachedCode !== $request->code) {
+            return response()->json(['message' => 'Invalid or expired verification code'], 400);
+        }
+        $user->password = Hash::make($request->password);
+        $user->save();
+
+        return response()->json(['message' => 'Password changed successfully']);
+    }
 
 
     /**

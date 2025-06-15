@@ -126,6 +126,25 @@ class ActivateAccountController extends Controller
         }
     }
 
+    /*************  ✨ Windsurf Command ⭐  *************/
+    /**
+     * Deletes the specified account.
+     *
+     * @param  Account  $account
+     * @return \Illuminate\Http\JsonResponse
+     */
+
+    /*******  1412361f-c63a-4bfb-841b-6e7f9ac7c4da  *******/
+    function DeleteAccount(Account $account)
+    {
+        try {
+            $account->delete();
+            return $this->json_success('Account Deleted Success', []);
+        } catch (\Exception $e) {
+            return $this->json_failed($e->getMessage());
+        }
+    }
+
 
     //Cooperative Payments
 

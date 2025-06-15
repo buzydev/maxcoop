@@ -68,7 +68,7 @@ class WithdrawalController extends Controller
     public function GetAllWithdraws()
     {
         try {
-            $result = Withdrawal::latest()->get();
+            $result = Withdrawal::with('user')->latest()->get();
             return $this->json_success('Withdrawals Fetched Successfully', $result, 200);
         } catch (\Exception $e) {
             return $this->json_failed($e->getMessage());
@@ -105,7 +105,7 @@ class WithdrawalController extends Controller
                 'result' => $withdraw,
                 'msg' => 'Your withdrawal requests has been ' . $request->status
             ];
-            Notification::send($withdraw->user(), new SendWithdrawalNotification($message));
+            Notification::send($withdraw->user, new SendWithdrawalNotification($message));
             return $this->json_success('Withdrawal ' . $request->status, $withdraw);
         } else {
             return $this->json_failed("withdraw request not found");
@@ -128,7 +128,7 @@ class WithdrawalController extends Controller
     public function GetAllCoopPayments()
     {
         try {
-            $result = CoopPayment::latest()->get();
+            $result = CoopPayment::with('user')->latest()->get();
             return $this->json_success('Coop Payments Fetched Successfully', $result, 200);
         } catch (\Exception $e) {
             return $this->json_failed($e->getMessage());
