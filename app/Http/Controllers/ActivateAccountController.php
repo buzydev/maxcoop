@@ -6,8 +6,12 @@ use App\Events\AccountActivateEvent;
 use App\Events\AccountRejectEvent;
 use App\Models\Account;
 use App\Models\ActivateAccount;
+use App\Notifications\AdminSendAccountActivationNotification;
+use App\Notifications\SendAccountActivationNotification;
+use App\Notifications\SendActivateAccountNotification;
 use App\Services\UserService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Validator;
 
 class ActivateAccountController extends Controller
@@ -24,11 +28,14 @@ class ActivateAccountController extends Controller
                 return $this->json_failed('Validation failed', $validate->errors(), 422);
             }
 
-            auth()->user()->account()->create([
+            $activation = auth()->user()->account()->create([
                 'imageUrl' => $request->imageUrl,
                 'paymentDate' => $request->paymentDate
             ]);
-
+            //User
+            Notification::send(auth()->user(), new SendAccountActivationNotification($activation));
+            //Admin
+            Notification::route('mail', [config('constants.admin_email') => "Account Activation Request"])->notify(new AdminSendAccountActivationNotification($activation));
             return $this->json_success('Account activation request sent successfully');
         } catch (\Exception $e) {
             return $this->json_failed($e->getMessage());
@@ -103,7 +110,7 @@ class ActivateAccountController extends Controller
             $account->status = config('constants.accountStatus.1');
             $account->save();
             event(new AccountActivateEvent($user, $request->plan));
-
+            Notification::send($user, new SendActivateAccountNotification($user, $request->plan));
             return $this->json_success('Account Activation Success', $account);
         } catch (\Exception $e) {
             return $this->json_failed($e->getMessage());
@@ -120,6 +127,8 @@ class ActivateAccountController extends Controller
             $account->status =  config('constants.accountStatus.2');
             $account->save();
             event(new AccountRejectEvent());
+            $user = $account->user;
+            Notification::send($user, new SendActivateAccountNotification($user, $account->user->plan));
             return $this->json_success('Account Rejection Success', $account);
         } catch (\Exception $e) {
             return $this->json_failed($e->getMessage());
